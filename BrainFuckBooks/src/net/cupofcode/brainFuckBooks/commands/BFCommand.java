@@ -1,5 +1,6 @@
 package net.cupofcode.brainFuckBooks.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -36,13 +37,26 @@ public class BFCommand implements CommandExecutor {
 							for (String page : bookMeta.getPages()) {
 								code += page;
 							}
+							code.replaceAll("[^,.\\[\\]<>+-]", "");
+							
 							String input = "";
 							
 							for (int i = 1; i < args.length; i++) {
 								input += args[i] + " ";
 							}
+							if (input.length() > 0)
+								input = input.substring(0, input.length() - 1);
 							
-							p.sendMessage(ChatColor.BLUE + BrainFuckUtils.interpret(code, input));
+							final String finalCode = code;
+							final String finalInput = input;
+							
+							Bukkit.getScheduler().runTaskLaterAsynchronously(instance, new Runnable() {
+								@Override
+								public void run() {
+									// no input
+									p.sendMessage(ChatColor.BLUE + BrainFuckUtils.interpret(finalCode, finalInput));
+								}
+							}, 0);
 							return true;
 						}
 					}

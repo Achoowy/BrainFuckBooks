@@ -4,12 +4,16 @@ import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 
 public class BrainFuckUtils {
+private static long maxOperations = Integer.MAX_VALUE;
+private static long length = 65535;
+	
 	public static String interpret(String s, String inputString) {
 		// References: https://www.geeksforgeeks.org/brainfuck-interpreter-java/
 
 		CharacterIterator input = new StringCharacterIterator(inputString);
 		String output = "";
 		
+		long operations = 0;
 		int ptr = 0; // Data pointer
 		int length = 65535;
 		int c = 0;
@@ -61,8 +65,8 @@ public class BrainFuckUtils {
 			// , inputs a character and store it in the
 			// cell at the pointer
 			case ',':
-
-				memory[ptr] = (byte) input.next();
+				memory[ptr] = (input.getIndex() < input.getEndIndex()) ? (byte) input.current() : 0;
+				input.next();
 				break;
 
 			// [ jumps past the matching ] if the cell
@@ -98,8 +102,14 @@ public class BrainFuckUtils {
 				}
 				break;
 			}
+			operations++;
+			if (operations >= maxOperations) {
+				output = "BrainFuck program took too long to run";
+				break;
+			}
 		}
+		System.out.println(operations);
 		return output;
-		
+
 	}
 }

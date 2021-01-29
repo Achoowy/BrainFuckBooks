@@ -22,45 +22,50 @@ import net.cupofcode.brainFuckBooks.commands.BFCommand;
 import net.cupofcode.brainFuckBooks.listeners.PlayerInteract;
 
 public class BrainFuckBooks extends JavaPlugin {
-    private static BrainFuckBooks instance;
-    private File configFile;
+	private static BrainFuckBooks instance;
+	private File configFile;
 	private FileConfiguration config;
 	public NamespacedKey bookKey;
 
-    @Override
-    public void onEnable() {
-        instance = this;
-        bookKey = new NamespacedKey(instance, "brain_fuck_book"); //String "TRUE" for BrainFuck Book items
-        loadConfig();
-        
-        getLogger().info("Loaded BrainFuckBooks");
+	@Override
+	public void onEnable() {
+		instance = this;
+		bookKey = new NamespacedKey(instance, "brain_fuck_book"); // String "TRUE" for BrainFuck Book items
+		loadConfig();
 
-        registerListeners(new PlayerInteract());
-        
-        getCommand("bf").setExecutor(new BFCommand());
-        
-        if(config.getBoolean("settings.brainfuckbook.recipe.enabled"))
+		getLogger().info("Loaded BrainFuckBooks");
+
+		registerListeners(new PlayerInteract());
+
+		getCommand("bf").setExecutor(new BFCommand());
+
+		if (config.getBoolean("settings.brainfuckbook.recipe.enabled"))
 			addBrainFuckBookRecipe();
-        	
-    }
 
-    private void registerListeners(Listener... listeners) {
-        Arrays.stream(listeners).forEach(listener -> getServer().getPluginManager().registerEvents(listener, this));
-    }
+		// Add bStats
+		Metrics metrics = new Metrics(this, 10153);
+		Bukkit.getLogger().info("[ChessBoards] bStats: " + metrics.isEnabled() + " plugin ver: " + getDescription().getVersion());
+		metrics.addCustomChart(new Metrics.SimplePie("plugin_version", () -> getDescription().getVersion()));
 
-    public static BrainFuckBooks getInstance() {
-        return instance;
-    }
-    
-    public void addBrainFuckBookRecipe() {
+	}
+
+	private void registerListeners(Listener... listeners) {
+		Arrays.stream(listeners).forEach(listener -> getServer().getPluginManager().registerEvents(listener, this));
+	}
+
+	public static BrainFuckBooks getInstance() {
+		return instance;
+	}
+
+	public void addBrainFuckBookRecipe() {
 		ItemStack brainFuckBook = new ItemStack(Material.WRITABLE_BOOK);
 		BookMeta brainFuckBookMeta = (BookMeta) brainFuckBook.getItemMeta();
-		
+
 		brainFuckBookMeta.setDisplayName(ChatColor.DARK_BLUE + "BrainFuck Book");
-		brainFuckBookMeta.getPersistentDataContainer().set(bookKey, PersistentDataType.STRING, "TRUE"); 
+		brainFuckBookMeta.getPersistentDataContainer().set(bookKey, PersistentDataType.STRING, "TRUE");
 		brainFuckBookMeta.addPage("BrainFuck Code:");
 		brainFuckBookMeta.setLore(Arrays.asList(ChatColor.BOLD + "punch a block to run code"));
-		
+
 		brainFuckBook.setItemMeta(brainFuckBookMeta);
 
 		NamespacedKey key = new NamespacedKey(this, "brainFuckBook");
@@ -69,8 +74,10 @@ public class BrainFuckBooks extends JavaPlugin {
 		ArrayList<String> shapeArr = (ArrayList<String>) config.get("settings.brainfuckbook.recipe.shape");
 		recipe.shape(shapeArr.toArray(new String[shapeArr.size()]));
 
-		for(String ingredientKey : config.getConfigurationSection("settings.brainfuckbook.recipe.ingredients").getKeys(false)){
-			recipe.setIngredient(ingredientKey.charAt(0), Material.valueOf((String) config.get("settings.brainfuckbook.recipe.ingredients." + ingredientKey)));
+		for (String ingredientKey : config.getConfigurationSection("settings.brainfuckbook.recipe.ingredients")
+				.getKeys(false)) {
+			recipe.setIngredient(ingredientKey.charAt(0), Material
+					.valueOf((String) config.get("settings.brainfuckbook.recipe.ingredients." + ingredientKey)));
 		}
 
 		Bukkit.addRecipe(recipe);
@@ -94,7 +101,6 @@ public class BrainFuckBooks extends JavaPlugin {
 
 		HashMap<String, Object> defaultConfig = new HashMap<>();
 
-		
 		HashMap<String, String> defaultRecipe = new HashMap<>();
 		defaultRecipe.put("B", Material.BOOK.toString());
 		defaultRecipe.put("R", Material.REDSTONE.toString());
@@ -106,23 +112,22 @@ public class BrainFuckBooks extends JavaPlugin {
 				add("B");
 			}
 		});
-		
-		if(!config.contains("settings.brainfuckbook.recipe.ingredients")) {
+
+		if (!config.contains("settings.brainfuckbook.recipe.ingredients")) {
 			for (String key : defaultRecipe.keySet()) {
 				defaultConfig.put("settings.brainfuckbook.recipe.ingredients." + key, defaultRecipe.get(key));
 			}
 		}
 
-		
 		for (String key : defaultConfig.keySet()) {
-			if(!config.contains(key)) {
+			if (!config.contains(key)) {
 				config.set(key, defaultConfig.get(key));
 			}
 		}
 
 		this.saveConfig();
 	}
-	
+
 	@Override
 	public void saveConfig() {
 		try {

@@ -43,9 +43,8 @@ public class BrainFuckBooks extends JavaPlugin {
 			addBrainFuckBookRecipe();
 
 		// Add bStats
-		Metrics metrics = new Metrics(this, 10153);
-		Bukkit.getLogger().info("[ChessBoards] bStats: " + metrics.isEnabled() + " plugin ver: " + getDescription().getVersion());
-		metrics.addCustomChart(new Metrics.SimplePie("plugin_version", () -> getDescription().getVersion()));
+		Metrics metrics = new Metrics(this, 10171);
+        Bukkit.getLogger().info("[BrainFuckBooks] bStats: " + metrics.isEnabled() + " plugin ver: " + getDescription().getVersion());
 
 	}
 

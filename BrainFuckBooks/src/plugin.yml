@@ -1,0 +1,9 @@
+main: net.cupofcode.brainFuckBooks.BrainFuckBooks
+name: BrainFuckBooks
+version: '0.1'
+description: Create books with run-able BrainFuck code
+author: Nicholas Kopiwoda
+api-version: 1.16
+commands:
+  bf:
+    description: runs book code

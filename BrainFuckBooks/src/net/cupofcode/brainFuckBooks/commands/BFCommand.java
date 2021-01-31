@@ -48,6 +48,7 @@ public class BFCommand implements CommandExecutor {
 								input = input.substring(0, input.length() - 1);
 							
 							BrainFuckUtils.runBrainFuck(p, code, input);
+							return true;
 						}
 					}
 				}

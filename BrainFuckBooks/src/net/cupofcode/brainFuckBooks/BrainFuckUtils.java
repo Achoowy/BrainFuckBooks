@@ -32,7 +32,6 @@ public class BrainFuckUtils {
 		bracketCheck = bracketCheck.replaceAll("[^\\[\\]]", "");
 
 		while (bracketCheck.length() != 0) {
-			System.out.println(bracketCheck);
 			if (bracketCheck.contains("[]"))
 				bracketCheck = bracketCheck.replaceFirst("\\[\\]", "");
 			else
@@ -143,12 +142,10 @@ public class BrainFuckUtils {
 				break;
 			}
 		}
-		System.out.println(operations);
 		return output;
 	}
 
 	public static String replaceInfiniteLoops(String code) {
-		System.out.println(code);
 		// locate nested loops
 
 		int loopPtr = code.indexOf("[", 1);

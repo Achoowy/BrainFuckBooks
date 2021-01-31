@@ -47,17 +47,7 @@ public class BFCommand implements CommandExecutor {
 							if (input.length() > 0)
 								input = input.substring(0, input.length() - 1);
 							
-							final String finalCode = code;
-							final String finalInput = input;
-							
-							Bukkit.getScheduler().runTaskLaterAsynchronously(instance, new Runnable() {
-								@Override
-								public void run() {
-									// no input
-									p.sendMessage(ChatColor.BLUE + BrainFuckUtils.interpret(finalCode, finalInput));
-								}
-							}, 0);
-							return true;
+							BrainFuckUtils.runBrainFuck(p, code, input);
 						}
 					}
 				}

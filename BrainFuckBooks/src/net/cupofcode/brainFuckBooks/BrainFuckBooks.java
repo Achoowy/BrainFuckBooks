@@ -103,7 +103,8 @@ public class BrainFuckBooks extends JavaPlugin {
 		HashMap<String, String> defaultRecipe = new HashMap<>();
 		defaultRecipe.put("B", Material.BOOK.toString());
 		defaultRecipe.put("R", Material.REDSTONE.toString());
-
+		
+		defaultConfig.put("settings.brainfuckbook.program.maxAtOnce", 3);
 		defaultConfig.put("settings.brainfuckbook.recipe.enabled", true);
 		defaultConfig.put("settings.brainfuckbook.recipe.shape", new ArrayList<String>() {
 			{

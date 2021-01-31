@@ -47,19 +47,12 @@ public class PlayerInteract implements Listener {
 				}
 
 				code.replaceAll("[^,.\\[\\]<>+-]", "");
-				final String finalCode = code;
 				if (code.contains(",")) {
 					// code takes input
 					event.getPlayer().sendMessage(ChatColor.DARK_BLUE
 							+ "This program requires input. Use: '/bf run [input]' to run the code.");
 				} else {
-					Bukkit.getScheduler().runTaskLaterAsynchronously(instance, new Runnable() {
-						@Override
-						public void run() {
-							// no input
-							event.getPlayer().sendMessage(ChatColor.BLUE + BrainFuckUtils.interpret(finalCode, ""));
-						}
-					}, 0);
+					BrainFuckUtils.runBrainFuck(event.getPlayer(), code, "");
 				}
 			}
 		}

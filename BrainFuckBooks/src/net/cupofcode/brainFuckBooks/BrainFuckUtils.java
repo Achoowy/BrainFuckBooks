@@ -3,19 +3,27 @@ package net.cupofcode.brainFuckBooks;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scheduler.BukkitWorker;
+
+import net.md_5.bungee.api.ChatColor;
+
 public class BrainFuckUtils {
-private static long maxOperations = Integer.MAX_VALUE;
-private static long length = 65535;
 	
+	private static long maxOperations = Integer.MAX_VALUE;
+	private static int length = 65535;
+	private static int maxTasks = -1;
+
 	public static String interpret(String s, String inputString) {
-		// References: https://www.geeksforgeeks.org/brainfuck-interpreter-java/
+		// Referenced: https://www.geeksforgeeks.org/brainfuck-interpreter-java/
 
 		CharacterIterator input = new StringCharacterIterator(inputString);
 		String output = "";
-		
+
 		long operations = 0;
 		int ptr = 0; // Data pointer
-		int length = 65535;
 		int c = 0;
 		byte memory[] = new byte[length];
 
@@ -80,6 +88,8 @@ private static long length = 65535;
 							c++;
 						else if (s.charAt(i) == ']')
 							c--;
+						else
+							operations++;
 						i++;
 					}
 				}
@@ -96,6 +106,8 @@ private static long length = 65535;
 							c++;
 						else if (s.charAt(i) == '[')
 							c--;
+						else
+							operations++;
 						i--;
 					}
 					i--;
@@ -104,12 +116,51 @@ private static long length = 65535;
 			}
 			operations++;
 			if (operations >= maxOperations) {
-				output = "BrainFuck program took too long to run";
+				output = ChatColor.BOLD + "BrainFuck program took too long to run";
+				break;
+			}
+			if (output.length() > 256) {
+				output = ChatColor.BOLD + "BrainFuck program output is too large";
 				break;
 			}
 		}
 		System.out.println(operations);
 		return output;
+	}
 
+	public static int getRunningBrainFuckTasksCount() {
+		int count = 0;
+		for (BukkitTask task : Bukkit.getScheduler().getPendingTasks()) {
+			if (task.getOwner().equals(BrainFuckBooks.getInstance())) {
+				count++;
+			}
+		}
+//		for (BukkitWorker worker : Bukkit.getScheduler().getActiveWorkers()) {
+//			if (worker.getOwner().equals(BrainFuckBooks.getInstance())) {
+//				count++;
+//			}
+//		}
+		return count;
+	}
+	
+	public static void runBrainFuck(Player p, String code, String input) {
+		//	set maxTasks if necessary
+		if (maxTasks == -1) {
+			maxTasks = (int) BrainFuckBooks.getInstance().getConfig().get("settings.brainfuckbook.program.maxAtOnce");
+		}
+		
+		// check if too may tasks are already running
+		if (getRunningBrainFuckTasksCount() >= maxTasks) {
+			p.sendMessage(ChatColor.BLUE  + (ChatColor.BOLD + "Too many BrainFuck programs are running at once.  Try again later"));
+			return;
+		}
+		
+		Bukkit.getScheduler().runTaskLaterAsynchronously(BrainFuckBooks.getInstance(), new Runnable() {
+			@Override
+			public void run() {
+				// no input
+				p.sendMessage(ChatColor.BLUE + BrainFuckUtils.interpret(code, input));
+			}
+		}, 0);
 	}
 }

@@ -11,12 +11,12 @@ import org.bukkit.scheduler.BukkitWorker;
 import net.md_5.bungee.api.ChatColor;
 
 public class BrainFuckUtils {
-	
+
 	private static long maxOperations = Integer.MAX_VALUE;
 	private static int length = 65535;
 	private static int maxTasks = -1;
 
-	public static String interpret(String s, String inputString) {
+	public static String interpret(String code, String inputString) {
 		// Referenced: https://www.geeksforgeeks.org/brainfuck-interpreter-java/
 
 		CharacterIterator input = new StringCharacterIterator(inputString);
@@ -27,9 +27,25 @@ public class BrainFuckUtils {
 		int c = 0;
 		byte memory[] = new byte[length];
 
+		// Check bracket syntax
+		String bracketCheck = new String(code);
+		bracketCheck = bracketCheck.replaceAll("[^\\[\\]]", "");
+
+		while (bracketCheck.length() != 0) {
+			System.out.println(bracketCheck);
+			if (bracketCheck.contains("[]"))
+				bracketCheck = bracketCheck.replaceFirst("\\[\\]", "");
+			else
+				// improper bracket syntax
+				return ChatColor.BOLD + "Could not run BrainFuck program: improper bracket syntax";
+		}
+
+		// Replace infinite loops with "L"
+		code = replaceInfiniteLoops(code);
+
 		// Parsing through each character of the code
-		for (int i = 0; i < s.length(); i++) {
-			switch (s.charAt(i)) {
+		for (int i = 0; i < code.length(); i++) {
+			switch (code.charAt(i)) {
 			case '>':
 
 				// > moves the pointer to the right
@@ -83,10 +99,10 @@ public class BrainFuckUtils {
 
 				if (memory[ptr] == 0) {
 					i++;
-					while (c > 0 || s.charAt(i) != ']') {
-						if (s.charAt(i) == '[')
+					while (c > 0 || code.charAt(i) != ']') {
+						if (code.charAt(i) == '[')
 							c++;
-						else if (s.charAt(i) == ']')
+						else if (code.charAt(i) == ']')
 							c--;
 						else
 							operations++;
@@ -101,10 +117,10 @@ public class BrainFuckUtils {
 
 				if (memory[ptr] != 0) {
 					i--;
-					while (c > 0 || s.charAt(i) != '[') {
-						if (s.charAt(i) == ']')
+					while (c > 0 || code.charAt(i) != '[') {
+						if (code.charAt(i) == ']')
 							c++;
-						else if (s.charAt(i) == '[')
+						else if (code.charAt(i) == '[')
 							c--;
 						else
 							operations++;
@@ -113,6 +129,9 @@ public class BrainFuckUtils {
 					i--;
 				}
 				break;
+			case 'L':
+				if (memory[ptr] != 0)
+					return ChatColor.BOLD + "Could not run BrainFuck program: program ran an into infinite loop";
 			}
 			operations++;
 			if (operations >= maxOperations) {
@@ -126,6 +145,51 @@ public class BrainFuckUtils {
 		}
 		System.out.println(operations);
 		return output;
+	}
+
+	public static String replaceInfiniteLoops(String code) {
+		System.out.println(code);
+		// locate nested loops
+
+		int loopPtr = code.indexOf("[", 1);
+		while (loopPtr != -1) {
+			int open = loopPtr;
+
+			// find loop's close
+			int loopCount = 0;
+			while (loopCount != 0 && code.indexOf("[", loopPtr + 1) > code.indexOf("]", loopPtr + 1)) {
+				int nextOpen = code.indexOf("[", loopPtr + 1);
+				int nextClose = code.indexOf("]", loopPtr + 1);
+				if (nextOpen < nextClose) {
+					loopPtr = nextOpen;
+					loopCount++;
+				} else {
+					loopPtr = nextClose;
+					loopCount--;
+				}
+			}
+			int close = code.indexOf("]", loopPtr + 1);
+			String fixedLoop = replaceInfiniteLoops(code.substring(open, close + 1));
+			loopPtr = open + fixedLoop.length(); // set to the new location of close
+			code = code.substring(0, open) + fixedLoop + code.substring(close + 1);
+			loopPtr = code.indexOf("[", loopPtr + 1);
+		}
+
+		// remove useless statements
+		String infiniteCheck = new String(code);
+		infiniteCheck = infiniteCheck.replaceAll("\\.", "");
+		String oldCheck = "";
+
+		// remove useless statements
+		while (!infiniteCheck.equals(oldCheck)) {
+			oldCheck = new String(infiniteCheck);
+			infiniteCheck = infiniteCheck.replaceAll("<\\.*>|>\\.*<|\\+\\.*\\-|\\-\\.*\\+", "");
+		}
+
+		// place infinite loop char
+		if (infiniteCheck.equals("[]"))
+			return "L";
+		return code;
 	}
 
 	public static int getRunningBrainFuckTasksCount() {
@@ -142,19 +206,20 @@ public class BrainFuckUtils {
 //		}
 		return count;
 	}
-	
+
 	public static void runBrainFuck(Player p, String code, String input) {
-		//	set maxTasks if necessary
+		// set maxTasks if necessary
 		if (maxTasks == -1) {
 			maxTasks = (int) BrainFuckBooks.getInstance().getConfig().get("settings.brainfuckbook.program.maxAtOnce");
 		}
-		
+
 		// check if too may tasks are already running
 		if (getRunningBrainFuckTasksCount() >= maxTasks) {
-			p.sendMessage(ChatColor.BLUE  + (ChatColor.BOLD + "Too many BrainFuck programs are running at once.  Try again later"));
+			p.sendMessage(ChatColor.BLUE
+					+ (ChatColor.BOLD + "Too many BrainFuck programs are running at once.  Try again later"));
 			return;
 		}
-		
+
 		Bukkit.getScheduler().runTaskLaterAsynchronously(BrainFuckBooks.getInstance(), new Runnable() {
 			@Override
 			public void run() {

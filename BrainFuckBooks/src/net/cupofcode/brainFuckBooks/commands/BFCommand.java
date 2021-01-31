@@ -37,7 +37,7 @@ public class BFCommand implements CommandExecutor {
 							for (String page : bookMeta.getPages()) {
 								code += page;
 							}
-							code.replaceAll("[^,.\\[\\]<>+-]", "");
+							code = code.replaceAll("[^,\\.\\[\\]<>\\+\\-]", "");
 							
 							String input = "";
 							

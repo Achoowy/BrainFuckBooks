@@ -46,7 +46,7 @@ public class PlayerInteract implements Listener {
 					code += page;
 				}
 
-				code.replaceAll("[^,.\\[\\]<>+-]", "");
+				code = code.replaceAll("[^,\\.\\[\\]<>\\+\\-]", "");
 				if (code.contains(",")) {
 					// code takes input
 					event.getPlayer().sendMessage(ChatColor.DARK_BLUE
